@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="eng">
+	<head>
+		<title>"LMS ALE Predictor"</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style type="text/css">
+			.options label, .signaloptions label {
+				font-size: 12px;
+				font-family: Arial, Helvetica, sans-serif;
+				width: 200px;
+				text-align: right;
+			}
+			
+			form, p{
+				width: 800px;
+			}
+
+			#signalcontainer {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-evenly;			
+			}
+
+			input[type="number"] {
+				width: 50px;
+			}
+
+			.signaltype {
+				border: 2px solid black;
+				margin: 10px;
+			}
+
+			#percentmodulationlabel, #carrierfreqlabel, #ammodulfreqlabel {
+				font-size: 12px;
+				font-family: Arial, Helvetica, sans-serif;
+				width: 150px;
+				text-align: right;
+				float: left;
+			}
+
+			#centerfreqlabel, #linearbandwidthlabel, #freqdeviationlabel, #fmmodulfreqlabel {
+				font-size: 12px;
+				font-family: Arial, Helvetica, sans-serif;
+				width: 150px;
+				text-align: right;
+				float: left;
+			}
+
+		</style>
+	</head>
+	<body>
+		<h2>LMS Adaptive Line Enhancer Predictor</h3>
+		<nav>
+			<ul>
+				<li class="links"><a href="http://127.0.0.1:8080/plotresponse">Plot Options</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/filtersignal">Filter Signal</a></li>
+			</ul>
+		</nav>
+		<p> Enter samples, sample rate, SNR, delay, trials, gain constant mu, iterations, and trials.  
+			The Least-Mean-Square algorithm will be used to create the adaptive filter.  The filter
+		    weights will be averaged over trials, each trial consisting of iterations.  The white Gaussian 
+			noise variance will be calculated from the SNR.  The delay is the number of samples to delay 
+			the reference input to the adaptive filter.  The sinsuoids, AM, or FM are the desired signals
+			to be extracted from the noisy input.  The adaptive filter is saved to disk and
+			its impulse or frequency response can be displayed.  Additionally, the weights can be used to
+		    filter another noisy signal.  The links allow you to plot the impulse or frequency response
+			and to use the adaptive filter to filter another noisy signal.
+		</p>
+		<div id="form">
+			<form action="http://127.0.0.1:8080/lmspredictorale" method="post">
+				<fieldset>
+					<legend>LMS ALE Predictor Options</legend>
+					<div class="options">
+						<label for="samples">Samples:</label>
+						<input type="number" id="samples" name="samples" min="3000" max="16000" required/>
+						<label for="samplerate">Sample Rate:</label>
+						<input type="number" id="samplerate" name="samplerate" min="1" required />
+						<br />
+						<label for="delay">Delay:</label>
+						<input type="number" id="delay" name="delay" min="1" required />
+						<label for="gain">Gain:</label>
+						<input type="text" id="gain" name="gain" required default="1" />
+						<br />
+						<label for="trials">Trials:</label>
+						<input type="number" id="trials" name="trials" min="1" max="200" required />
+						<label for="filtorder">Filter Order:</label>
+						<input type="number" id="filtorder" name="filtorder" min="2" max="50" required />
+						<br />
+					</div>
+					<hr />
+					<hr />
+					<div class="signaloptions">
+						<h3>Signal Options</h3>
+						<p>Enter the signal you wish to generate:
+							<ul>
+								<li>Sum of Sinusoids with Gaussian noise at a specified SNR</li>
+								<li>Amplitude Modulation (AM) waveform consisting of a sine wave with a cosine amplitude envelope</li>
+								<li>Frequency Modulation:  linear (LFM) or sine baseband</li>
+							</ul>
+						</p>
+						<input type="radio" name="signaltype" value="sumsinusoids" id="sumsinusoids" checked />
+						<label for="sumsinusoids">Sum of Sinsuoids</label>
+						<input type="radio" name="signaltype" value="am" id="am" />
+						<label for="am">Amplitude Modulation</label>
+						<input type="radio" name="signaltype" value="fm" id="fm" />
+						<label for="fm">Frequency Modulation</label>
+						<br />
+						<div id="signalcontainer">
+							<div class="signaltype">
+								<h4>Sum of Sinsuoids in Gaussian Noise</h4>
+								<!-- SNR with respect to largest sinsuoid -->
+								<label for="SSsnr">SNR (dB):</label>
+								<input type="number" id="SSsnr" name="SSsnr" min="1" />
+								<br />
+								<!-- max five sinsuoids -->
+								<label for="SSfreq1">Frequency 1 (Hz):</label>
+								<input type="number" id="SSfreq1" name="SSfreq1" min="1" />
+								<label for="SSamp1">Amplitude 1:</label>
+								<input type="number" id="SSamp1" name="SSamp1" min="1" max="10" />
+								<br />
+								<label for="SSfreq2">Frequency 2 (Hz):</label>
+								<input type="number" id="SSfreq2" name="SSfreq2" min="1" />
+								<label for="SSamp2">Amplitude 2:</label>
+								<input type="number" id="SSamp2" name="SSamp2" min="1" max="10" />
+								<br />
+								<label for="SSfreq3">Frequency 3 (Hz):</label>
+								<input type="number" id="SSfreq3" name="SSfreq3" min="1" />
+								<label for="SSamp3">Amplitude 3:</label>
+								<input type="number" id="SSamp3" name="SSamp3" min="1" max="10" />
+								<br />
+								<label for="SSfreq4">Frequency 4 (Hz):</label>
+								<input type="number" id="SSfreq4" name="SSfreq4" min="1" />
+								<label for="SSamp4">Amplitude 4:</label>
+								<input type="number" id="SSamp4" name="SSamp4" min="1" max="10" />
+								<br />
+								<label for="SSfreq5">Frequency 5 (Hz):</label>
+								<input type="number" id="SSfreq5" name="SSfreq5" min="1" />
+								<label for="SSamp5">Amplitude 5:</label>
+								<input type="number" id="SSamp5" name="SSamp5" min="1" max="10" />
+								<br />		
+							</div>
+							<div class="signaltype" >
+								<h4>Amplitude Modulation (DSB)</h4>
+								<label for="percentmodulation" id="percentmodulationlabel">Modulation Percent:</label>
+								<input type="number" id="percentmodulation" name="percentmodulation" min="0" max="100" />
+								<br />
+								<label for="carrierfreq" id="carrierfreqlabel">Carrier Frequency (Hz):</label>
+								<input type="number" id="carrierfreq" name="carrierfreq" min="1" />
+								<br />
+								<label for="modulfreq" id="ammodulfreqlabel">Modulating Frequency (Hz):</label>
+								<input type="number" id="modulfreq" name="modulfreq" min="1" />
+							</div>
+							<div class="signaltype">
+								<h4>Frequency Modulation</h4>
+								<input type="radio" name="FMtype" value="linear" id="FMlinear" checked />
+								<label for="FMlinear">Linear</label>
+								<input type="radio" name="FMtype" value="sine" id="FMsine" />
+								<label for="FMsine">Sine</label>
+								<br />
+								<label for="FMfrequency" id="centerfreqlabel">Center Frequency (Hz):</label>
+								<input type="number" id="FMfrequency" name="FMfrequency" min="1" />
+								<hr />
+								<label for="FMbandwidth" id="linearbandwidthlabel">Linear Bandwidth (Hz):</label>
+								<input type="number" id="FMbandwidth" name="FMbandwidth" min="1" />
+								<hr />
+								<label for="FMfreqdev" id="freqdeviationlabel">Frequency Deviation (Hz):</label>
+								<input type="number" id="FMfreqdev" name="FMfreqdev" min="1" />
+								<br />
+								<label for="FMmodfreq" id="fmmodulfreqlabel">Modulating Frequency (Hz):</label>
+								<input type="number" id="FMmodfreq" name="FMmodfreq" min="1" />
+							</div>
+						</div>
+					</div>
+					<input type="submit" value="Submit" />
+					<input type="text" size="50" name="status" value="{{.Status}}" readonly />
+				</fieldset>
+			</form>
+		</div>
+	</body>
+</html>

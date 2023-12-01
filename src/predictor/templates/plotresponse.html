@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="eng">
+	<head>
+		<title>"Plot Response"</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style type="text/css">
+			.options label, .freqoptions label {
+				font-size: 12px;
+				font-family: Arial, Helvetica, sans-serif;
+				width: 200px;
+				text-align: right;
+			}
+			form, p{
+				width: 500px;
+			}
+
+		</style>
+	</head>
+	<body>
+		<h2>Plot Response</h3>
+		<nav>
+			<ul>
+				<li class="links"><a href="http://127.0.0.1:8080/lmspredictorale">LMS ALE Predictor</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/filtersignal">Filter Signal</a></li>
+			</ul>
+		</nav>
+		<p>Enter the path to the file containing the complex data.  Choose impulse or frequency response.
+			Interpolation is used in the impulse response plot.
+		</p>
+		<div id="form">
+			<form action="http://127.0.0.1:8080/plotresponse" method="post">
+				<fieldset>
+					<legend>Plot Response Options</legend>
+					<div class="options">
+						<label for="filename">Filename:</label>
+						<input type="file" id="filename" name="filename" required/>
+						<br />
+						<input type="radio" name="domain" value="time" id="timedomain" checked />
+						<label for="timedomain">Impulse Response</label>
+						<input type="radio" name="domain" value="frequency" id="frequencydomain" />
+						<label for="frequencydomain">Frequency Response</label>
+						<input type="checkbox" name="interpolate" id="interpolate" value="interpolate" />
+						<label for="interpolate">Interpolate</label>
+					</div>
+					<br />
+					<div class="freqoptions">
+						<hr />
+						<h3>Frequency Response</h3>
+						<p>Enter frequency domain configuration.  FFTs are averaged with 50% overlap.
+							Zero-padding is used as necessary given the number of segments to average and 
+							the FFT size.  The data is windowed to reduce sidelobe spectral leakage with a 
+							cost of main lobe widening and reduced resolution.                                                         
+						</p>
+						<label for="fftsize">FFT Size:</label>
+						<input type="number" id="fftsize" name="fftsize" min="300" max="90000" required/>
+						<label for="fftsegments">FFT Segments:</label>
+						<input type="number" id="fftseg" name="fftsegments" min="1" max="20" required/>
+						<label for="fftwindow">FFT Window:</label>
+						<select id="fftwindow" name="fftwindow">
+							<option value="Bartlett" selected>Bartlett</option>
+							<option value="Welch">Welch</option>
+							<option value="Hamming">Hamming</option>
+							<option value="Hanning">Hanning</option>
+							<option value="Rectangle">Rectangle</option>
+						</select>
+						<br />
+						<input type="radio" name="plottype" value="linear" id="linearplot" checked />
+						<label for="linearplot">Linear Plot</label>
+						<input type="radio" name="plottype" value="log" id="logplot" />
+						<label for="logplot">Log Plot</label>
+					</div>
+					<input type="submit" value="Submit" />
+					<input type="text" size="50" name="status" value="{{.Status}}" readonly />
+				</fieldset>
+			</form>
+		</div>
+	</body>
+</html>

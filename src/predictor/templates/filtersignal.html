@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="eng">
+	<head>
+		<title>Filter Signal"</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<style type="text/css">
+
+			.options label {
+				font-size: 12px;
+				font-family: Arial, Helvetica, sans-serif;
+				min-width: 200px;
+				text-align: right;
+			}
+			form, p, table, fieldset {
+				width: 600px;
+			}
+
+			table input[type="text"] {
+				width: 50px;
+			}
+			table {
+				border: 2px solid black;
+				border-collapse: collapse;
+			}
+
+			td, th {
+				border: 1px solid black;
+				text-align: center;
+			}
+
+			#outer-container {
+				display: flex;
+				flex-direction: row;
+			}
+
+			#gridxlabel {
+				width: 615px;
+			}		
+
+			#xlabel-container {
+				display: flex;
+				flex-direction: row;
+				width: 600px;
+				justify-content: space-between;
+			}
+
+			#ylabel-container {
+				display: flex;
+				flex-direction: column-reverse;
+				width:40px;
+				justify-content: start;
+			}
+
+			div.xlabel, div.ylabel {
+				font-size: 10px;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+
+			div.ylabel {
+				text-align: right;
+				flex: 0 0 60px;
+			}
+
+			div.ylabel:first-child {
+				flex: 0 0 10px;
+			}
+
+			div.xlabel {
+				text-align: left;
+				flex: 0 0 60px;
+			}
+
+			div.grid {
+				display: grid;
+				grid-template-columns: repeat(300, 2px);
+				grid-template-rows: repeat(300, 2px);
+				width: 600px;
+				height: 600px;
+				border: 2px solid black;
+				margin-left: 10px;
+			}
+			
+			/*  y-axis ticks */
+			.grid div:nth-child(9001), .grid div:nth-child(18001), .grid div:nth-child(27001), .grid div:nth-child(36001), .grid div:nth-child(45001), .grid div:nth-child(54001),
+			.grid div:nth-child(63001), .grid div:nth-child(72001), .grid div:nth-child(81001) {
+			border-bottom: 2px solid black;
+			}
+
+			/* x-axis ticks */
+			.grid div:nth-child(89730), .grid div:nth-child(89760), .grid div:nth-child(89790), .grid div:nth-child(89820), .grid div:nth-child(89850), .grid div:nth-child(89880),
+			.grid div:nth-child(89910), .grid div:nth-child(89940), .grid div:nth-child(89970) {
+			border-left: 2px solid black;
+			}
+
+			div.grid > div {
+				margin: 0;
+				padding: 0;
+				border: 0;
+				color: white;
+				background-color: white;
+			}
+
+			div.grid > div.online {
+				background-color: gray;
+				color: gray;
+			}
+
+			#form {
+				margin-left: 10px;
+			}
+
+			#samples, #samplefreq, #snr {
+				width: 50px;
+			}
+
+		</style>
+	</head>
+	<body>
+		<h2>Filter Signal</h3>
+		<nav>
+			<ul>
+				<li class="links"><a href="http://127.0.0.1:8080/lmspredictorale">LMS ALE Predictor</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/plotresponse">Filter Signal</a></li>
+			</ul>
+		</nav>
+		<div id="outer-container">
+			<div id="ylabel-container">
+				{{range .Ylabel}}
+					<div class="ylabel">{{.}}</div>
+				{{end}}
+			</div>
+			<div id="gridxlabel">
+				<div class="grid">
+					{{range .Grid}}
+						<div class="{{.}}"></div>
+					{{end}}
+				</div>
+				<div id="xlabel-container">
+					{{range .Xlabel}}
+						<div class="xlabel">{{.}}</div>
+					{{end}}
+				</div>
+			</div>
+			<div id="form">
+				<form action="http://127.0.0.1:8080/filtersignal" method="post">
+					<fieldset>
+						<legend>Filter Signal Options</legend>
+						<div class="options">
+							<label for="samples">Samples:</label>
+							<input type="number" id="samples" name="samples" value="{{.Samples}}" min="2000" max="16000" required />
+							<label for="samplefreq">Sample Frequency:</label>
+							<input type="number" name="samplefreq" value="{{.SampleFreq}}" id="samplefreq" required />
+							<br />
+							<label for="snr">SNR:</label>
+							<input type="number" id="snr" name="snr" value="{{.SNR}}" required />
+							<label for="filter">Filter:</label>
+							<input type="file" id="filter" name="filter" value="{{.Filename}}" />
+							<hr />
+							<h4>Sinusoids</h4>
+							<table>
+								<tr>
+									<th class="sines">Frequency (Hz)</th>
+									<th class="sines">Amplitude</th>
+								</tr>
+								{{range .Sines}}
+									<tr>
+										<td class="sines">
+											<input type="number" name="{{.FreqName}}" value="{{.Freq}}" />
+										</td>
+										<td class="sines">
+											<input type="number" name="{{.AmplName}}" value="{{.Ampl}}" />
+										</td>
+									</tr>
+								{{end}}
+							</table>
+						</div>
+						<input type="submit" value="Submit" />
+						<input type="text" size="50" name="status" value="{{.Status}}" readonly />
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>
