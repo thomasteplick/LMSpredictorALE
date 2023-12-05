@@ -200,18 +200,30 @@ func (ep *Endpoints) findEndpoints(input *bufio.Scanner, rad float64) {
 	ep.xmin = math.MaxFloat64
 	ep.ymax = -math.MaxFloat64
 	ep.ymin = math.MaxFloat64
+	var (
+		n      int = 0 // impulse response plot
+		values []string
+	)
 	for input.Scan() {
 		line := input.Text()
-		// Each line has 2 or 3 space-separated values, depending on if it is real or complex data:
-		// time real, or x y for euclidean data
-		// time real imaginary for complex data
-		values := strings.Split(line, " ")
+		// Each line has 1, 2 or 3 space-separated values, depending on if it is real or complex data:
+		// real
+		// time real
+		// time real imaginary
+		values = strings.Split(line, " ")
 		var (
 			x, y, t float64
 			err     error
 		)
-		// real data
-		if len(values) == 2 {
+		// no time data, just real value, used for impulse response plot
+		if len(values) == 1 {
+			if y, err = strconv.ParseFloat(values[0], 64); err != nil {
+				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+				continue
+			}
+			n++
+			// real data
+		} else if len(values) == 2 {
 			if x, err = strconv.ParseFloat(values[0], 64); err != nil {
 				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
 				continue
@@ -266,22 +278,36 @@ func (ep *Endpoints) findEndpoints(input *bufio.Scanner, rad float64) {
 			ep.ymin = y
 		}
 	}
+	// impulse response plot
+	if len(values) == 1 {
+		ep.xmin = 0.0
+		ep.xmax = float64(n - 1)
+	}
 }
 
 // gridFill inserts the data points in the grid
 func gridFill(plot *PlotT, xscale float64, yscale float64, endpoints Endpoints, rad float64, input *bufio.Scanner) error {
+	var x float64 = -1
 	for input.Scan() {
 		line := input.Text()
-		// Each line has 2 or 3 space-separated values, depending on if it is real or complex data:
-		// time real, or x y for euclidean data
-		// time real imaginary for complex data
+		// Each line has 1, 2 or 3 space-separated values, depending on if it is real or complex data:
+		// real
+		// time real
+		// time real imaginary
 		values := strings.Split(line, " ")
 		var (
-			x, y, t float64
-			err     error
+			y, t float64
+			err  error
 		)
-		// real data
-		if len(values) == 2 {
+		// read data, no time
+		if len(values) == 1 {
+			x++
+			if y, err = strconv.ParseFloat(values[0], 64); err != nil {
+				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+				return err
+			}
+			// real data
+		} else if len(values) == 2 {
 			if x, err = strconv.ParseFloat(values[0], 64); err != nil {
 				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
 				return err
@@ -345,17 +371,24 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 		err          error
 	)
 
-	const lessen = 10
+	const lessen = 1
 
 	// Get first sample
 	input.Scan()
 	line := input.Text()
-	// Each line has 2 or 3 space-separated values, depending on if it is real or complex data:
-	// time real, or x y for euclidean data
-	// time real imaginary for complex data
+	// Each line has 1, 2 or 3 space-separated values, depending on if it is real or complex data:
+	// real
+	// time real
+	// time real imaginary
 	values := strings.Split(line, " ")
-	// real data
-	if len(values) == 2 {
+	if len(values) == 1 {
+		x = 0
+		if y, err = strconv.ParseFloat(values[0], 64); err != nil {
+			fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+			return err
+		}
+		// real data
+	} else if len(values) == 2 {
 		if x, err = strconv.ParseFloat(values[0], 64); err != nil {
 			fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
 			return err
@@ -416,12 +449,19 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 	// Continue with the rest of the points in the file
 	for input.Scan() {
 		line = input.Text()
-		// Each line has 2 or 3 space-separated values, depending on if it is real or complex data:
-		// time real, or x y for euclidean data
-		// time real imaginary for complex data
+		// Each line has 1, 2 or 3 space-separated values, depending on if it is real or complex data:
+		// real
+		// time real
+		// time real imaginary
 		values := strings.Split(line, " ")
-		// real data
-		if len(values) == 2 {
+		if len(values) == 1 {
+			x++
+			if y, err = strconv.ParseFloat(values[0], 64); err != nil {
+				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+				return err
+			}
+			// real data
+		} else if len(values) == 2 {
 			if x, err = strconv.ParseFloat(values[0], 64); err != nil {
 				fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
 				return err
@@ -530,7 +570,7 @@ func processTimeDomain(w http.ResponseWriter, r *http.Request, filename string) 
 			deg, err := strconv.ParseFloat(rotate, 64)
 			if err != nil {
 				plot.Status = "Rotate degree conversion error"
-				fmt.Printf("Rotate degree %v conversion error: %v", rotate, err)
+				fmt.Printf("Rotate degree %v conversion error: %v\n", rotate, err)
 			} else {
 				rad = deg2rad * deg
 			}
@@ -779,11 +819,23 @@ func processFrequencyDomain(w http.ResponseWriter, r *http.Request, filename str
 			for k := 0; k < m; k++ {
 				input.Scan()
 				line := input.Text()
-				// Each line has 2 or 3 space-separated values, depending on if it is real or complex data:
+				// Each line has 1, 2 or 3 space-separated values, depending on if it is real or complex data:
+				// real
 				// time real
-				// time real imaginary for complex data
+				// time real imaginary
 				values := strings.Split(line, " ")
-				// real data
+				if len(values) == 1 {
+					var r float64
+					if r, err = strconv.ParseFloat(values[0], 64); err != nil {
+						fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+						continue
+					}
+					if k != 0 {
+						diff += .5
+					}
+					bufm[k] = complex(r, 0)
+					// real data
+				}
 				if len(values) == 2 {
 					// time real, calculate the sampling rate from the time steps
 					var t, r float64
@@ -853,11 +905,20 @@ func processFrequencyDomain(w http.ResponseWriter, r *http.Request, filename str
 						break
 					}
 					line := input.Text()
-					// Each line has 2 space-separated values: real and imaginary
+					// Each line has 1 - 3 values: [time], real, [imag]
 					values := strings.Split(line, " ")
-					// real data
-					if len(values) == 2 {
-						// time real, don't need the time
+					if len(values) == 1 {
+						var r float64
+
+						if r, err = strconv.ParseFloat(values[0], 64); err != nil {
+							fmt.Printf("String %s conversion to float error: %v\n", values[0], err)
+							continue
+						}
+						// real data, no time or imag
+						bufm[k] = complex(r, 0)
+						// real data
+					} else if len(values) == 2 {
+						// time real, but don't need the time
 						var r float64
 
 						if r, err = strconv.ParseFloat(values[1], 64); err != nil {
@@ -890,7 +951,7 @@ func processFrequencyDomain(w http.ResponseWriter, r *http.Request, filename str
 				// EOF does not give an error but is considered normal termination
 				if !scanOK {
 					if input.Err() != nil {
-						fmt.Printf("Data file scan error: %v", input.Err().Error())
+						fmt.Printf("Data file scan error: %v\n", input.Err().Error())
 						return fmt.Errorf("data file scan error: %v", input.Err())
 					}
 				}
@@ -1097,7 +1158,7 @@ func (lms *LMSAlgorithm) fillBuf(n int, input *bufio.Scanner) int {
 		values := strings.Split(line, " ")
 		val, err := strconv.ParseFloat(values[1], 64)
 		if err != nil {
-			fmt.Printf("input sample conversion error: %v", err)
+			fmt.Printf("input sample conversion error: %v\n", err)
 			continue
 		}
 		lms.buf[n][i] = val
@@ -1108,9 +1169,11 @@ func (lms *LMSAlgorithm) fillBuf(n int, input *bufio.Scanner) int {
 	lms.samplesGenerated += howMany
 	// Average the normalizer
 	lms.normalizer /= float64(howMany)
-	// Save order/2 + delay - 1 samples from previous block error calculation.
-	// This is used as the desired value in the LMS error calculation.
-	n1 := block - lms.order/2 - lms.delay + 1
+
+	// Save order samples from previous block error calculation.
+	// This is used as the desired value in the LMS error calculation
+	// and updating the weight.
+	n1 := block - lms.order
 	n2 := (n + 1) % 2
 	j := 0
 	for i := n1; i < block; i++ {
@@ -1483,7 +1546,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 		samplerate, err := strconv.Atoi(sampleratetxt)
 		if err != nil {
 			plot.Status = fmt.Sprintf("Sample rate conversion to int error: %v", err.Error())
-			fmt.Printf("Sample rate conversion to int error: %v", err.Error())
+			fmt.Printf("Sample rate conversion to int error: %v\n", err.Error())
 			// Write to HTTP using template and grid
 			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1491,12 +1554,40 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// adaptive filter order is the number of past samples
+		// filter length = order + 1
+		txt := r.FormValue("filtorder")
+		order, err := strconv.Atoi((txt))
+		if err != nil {
+			plot.Status = fmt.Sprintf("Filter order conversion to int error: %v", err.Error())
+			fmt.Printf("Filter order conversion to int error: %v\n", err.Error())
+			// Write to HTTP using template and grid
+			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
+				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
+			}
+			return
+		}
+		// Make filter length odd, which means filter order is even;
+		// if order is 7, it is changed to 8, and the length becomes 9.
+		order = (order + 1) / 2 * 2
+
 		// reference input delay in samples to decorrelate the noise
-		txt := r.FormValue("delay")
+		txt = r.FormValue("delay")
 		delay, err := strconv.Atoi((txt))
 		if err != nil {
 			plot.Status = fmt.Sprintf("Delay conversion to int error: %v", err.Error())
 			fmt.Printf("Delay conversion to int error: %v", err.Error())
+			// Write to HTTP using template and grid
+			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
+				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
+			}
+			return
+		}
+
+		// delay restriction
+		if delay > order/2 {
+			plot.Status = "delay must be less than order/2"
+			fmt.Printf("Delay must be less than order/2\n")
 			// Write to HTTP using template and grid
 			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1509,7 +1600,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 		gain, err := strconv.ParseFloat(txt, 64)
 		if err != nil {
 			plot.Status = fmt.Sprintf("Gain conversion to float64 error: %v", err.Error())
-			fmt.Printf("Gain conversion to float64 error: %v", err.Error())
+			fmt.Printf("Gain conversion to float64 error: %v\n", err.Error())
 			// Write to HTTP using template and grid
 			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1523,29 +1614,13 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 		trials, err := strconv.Atoi((txt))
 		if err != nil {
 			plot.Status = fmt.Sprintf("Trials conversion to int error: %v", err.Error())
-			fmt.Printf("Trials conversion to int error: %v", err.Error())
+			fmt.Printf("Trials conversion to int error: %v\n", err.Error())
 			// Write to HTTP using template and grid
 			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
 			}
 			return
 		}
-
-		// reference input delay in samples to decorrelate the noise
-		txt = r.FormValue("filtorder")
-		order, err := strconv.Atoi((txt))
-		if err != nil {
-			plot.Status = fmt.Sprintf("Filter order conversion to int error: %v", err.Error())
-			fmt.Printf("Filter order conversion to int error: %v", err.Error())
-			// Write to HTTP using template and grid
-			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
-				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
-			}
-			return
-		}
-		// Make filter length odd, which means filter order is even;
-		// if order is 7, it is changed to 8, and the length becomes 9.
-		order = (order + 1) / 2 * 2
 
 		// Construct object to hold LMS algorithm parameters
 		lmsPredictor := LMSAlgorithm{
@@ -1562,7 +1637,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 			buf:          make([][]float64, 2),
 			done:         make(chan struct{}),
 			lastFiltered: make([]float64, order),
-			prevBlockIn:  make([]float64, order/2+delay-1),
+			prevBlockIn:  make([]float64, order),
 		}
 		lmsPredictor.buf[0] = make([]float64, block)
 		lmsPredictor.buf[1] = make([]float64, block)
@@ -1574,7 +1649,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 			err = lmsPredictor.generateLMSData(w, r)
 			if err != nil {
 				plot.Status = fmt.Sprintf("generateLMSData error: %v", err.Error())
-				fmt.Printf("generateLMSData error: %v", err.Error())
+				fmt.Printf("generateLMSData error: %v\n", err.Error())
 				// Write to HTTP using template and grid
 				if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 					log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1586,7 +1661,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 			err = lmsPredictor.runLms()
 			if err != nil {
 				plot.Status = fmt.Sprintf("generateLMSData error: %v", err.Error())
-				fmt.Printf("runLmsPredictor error: %v", err.Error())
+				fmt.Printf("runLmsPredictor error: %v\n", err.Error())
 				// Write to HTTP using template and grid
 				if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 					log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1601,7 +1676,7 @@ func handleLmsPredictorAle(w http.ResponseWriter, r *http.Request) {
 		file, err := os.Create(path.Join(dataDir, lmsFilterAle))
 		if err != nil {
 			plot.Status = fmt.Sprintf("create %v error: %v", path.Join(dataDir, lmsFilterAle), err.Error())
-			fmt.Printf("create %v error: %v", path.Join(dataDir, lmsFilterAle), err.Error())
+			fmt.Printf("create %v error: %v\n", path.Join(dataDir, lmsFilterAle), err.Error())
 			// Write to HTTP using template and grid
 			if err := lmspredictoraleTmpl.Execute(w, plot); err != nil {
 				log.Fatalf("Write to HTTP output using template with error: %v\n", err)
@@ -1791,15 +1866,21 @@ func (lms *LMSAlgorithm) runLmsBuf(index int, nsamples int) {
 		}
 		var err float64 = 0.0
 		// inputs from previous block
-		if n < d {
-			err = lms.prevBlockIn[n] - sum
+		dif := n - d
+		// error taking into account the delay due to causal fir filter
+		if dif < 0 {
+			err = lms.prevBlockIn[lms.order+dif] - sum
 		} else {
-			// error taking into account the delay due to causal fir filter
-			err = lms.buf[index][n-d] - sum
+			err = lms.buf[index][dif] - sum
 		}
 		// update the adaptive weights
 		for i := range lms.wTrial {
-			lms.wTrial[i] += g * err * lms.buf[index][n-i]
+			dif := n - i
+			if dif < 0 {
+				lms.wTrial[i] += g * err * lms.prevBlockIn[lms.order+dif]
+			} else {
+				lms.wTrial[i] += g * err * lms.buf[index][dif]
+			}
 			lms.wEnsemble[i] += lms.wTrial[i]
 		}
 	}

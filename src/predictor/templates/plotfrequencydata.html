@@ -116,8 +116,9 @@
 		<h2>Frequency Data Plot</h3>
 		<nav>
 			<ul>
-				<li class="links"><a href="http://127.0.0.1:8080/plotoptions">Plot Options</a></li>
-				<li class="links"><a href="http://127.0.0.1:8080/generatedata">Generate Data</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/plotresponse">Plot Response</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/filtersignal">Filter Signal</a></li>
+				<li class="links"><a href="http://127.0.0.1:8080/lmspredictorale">>LMS ALE Predictor</a></li>
 			</ul>
 		</nav>
 		<div id="outer-container">
@@ -139,7 +140,7 @@
 				</div>
 			</div>
 			<div id="form">
-				<form action="http://127.0.0.1:8080/plotdata" method="post">
+				<form action="http://127.0.0.1:8080/plotresponse" method="post">
 					<fieldset>
 						<legend>Plot Data Options</legend>
 						<div class="options">
@@ -171,7 +172,7 @@
 								<option value="Rectangle">Rectangle</option>
 							</select>
 							<label for="samplingrate">Sampling Rate (Hz):</label>
-							<input type="number" id="samplingrate" name="samplingrate" value="{{.SamplingFreq}}" readonly/>
+							<input type="number" id="samplingrate" name="samplingrate" value="{{.SampleFreq}}" readonly/>
 							<br />
 							<label for="samples">Data Samples:</label>
 							<input type="string" id="samples" value="{{.Samples}}" readonly />

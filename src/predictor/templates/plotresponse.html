@@ -14,6 +14,11 @@
 			form, p{
 				width: 500px;
 			}
+			
+			nav li{
+				display:inline;
+				margin: 20px;
+			}
 
 		</style>
 	</head>
@@ -53,9 +58,9 @@
 							cost of main lobe widening and reduced resolution.                                                         
 						</p>
 						<label for="fftsize">FFT Size:</label>
-						<input type="number" id="fftsize" name="fftsize" min="300" max="90000" required/>
+						<input type="number" id="fftsize" name="fftsize" min="300" max="90000" />
 						<label for="fftsegments">FFT Segments:</label>
-						<input type="number" id="fftseg" name="fftsegments" min="1" max="20" required/>
+						<input type="number" id="fftseg" name="fftsegments" min="1" max="20" />
 						<label for="fftwindow">FFT Window:</label>
 						<select id="fftwindow" name="fftwindow">
 							<option value="Bartlett" selected>Bartlett</option>
