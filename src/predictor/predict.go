@@ -299,7 +299,7 @@ func gridFill(plot *PlotT, xscale float64, yscale float64, endpoints Endpoints, 
 			y, t float64
 			err  error
 		)
-		// read data, no time
+		// real data, no time
 		if len(values) == 1 {
 			x++
 			if y, err = strconv.ParseFloat(values[0], 64); err != nil {
@@ -381,6 +381,7 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 	// time real
 	// time real imaginary
 	values := strings.Split(line, " ")
+	// real data, no time
 	if len(values) == 1 {
 		x = 0
 		if y, err = strconv.ParseFloat(values[0], 64); err != nil {
@@ -454,6 +455,7 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 		// time real
 		// time real imaginary
 		values := strings.Split(line, " ")
+		// real data, no time
 		if len(values) == 1 {
 			x++
 			if y, err = strconv.ParseFloat(values[0], 64); err != nil {
@@ -519,7 +521,7 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 		// Interpolate the points between previous point and current point
 
 		lenEdge := math.Sqrt((x-prevX)*(x-prevX) + (y-prevY)*(y-prevY))
-		ncells := int(columns*lenEdge/lenEP) / lessen // number of points to interpolate
+		ncells := 10 * int(columns*lenEdge/lenEP) / lessen // number of points to interpolate
 		stepX := (x - prevX) / float64(ncells)
 		stepY := (y - prevY) / float64(ncells)
 
