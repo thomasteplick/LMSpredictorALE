@@ -372,6 +372,7 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 	)
 
 	const lessen = 1
+	const increase = 10
 
 	// Get first sample
 	input.Scan()
@@ -521,7 +522,7 @@ func gridFillInterp(plot *PlotT, xscale float64, yscale float64, endpoints Endpo
 		// Interpolate the points between previous point and current point
 
 		lenEdge := math.Sqrt((x-prevX)*(x-prevX) + (y-prevY)*(y-prevY))
-		ncells := 10 * int(columns*lenEdge/lenEP) / lessen // number of points to interpolate
+		ncells := increase * int(columns*lenEdge/lenEP) / lessen // number of points to interpolate
 		stepX := (x - prevX) / float64(ncells)
 		stepY := (y - prevY) / float64(ncells)
 
