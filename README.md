@@ -1,3 +1,3 @@
 # LMSpredictorALE
-Least Mean Square (LMS) Adaptive Line Enhancer (ALE) predictor
-This program is an HTTP web application written in Go that uses the html/template package to generate dynamic HTML.  The server is listening at http://127.0.0.0:8080/lmspredictorale.
+Least Mean Square (LMS) Adaptive Line Enhancer (ALE) predictor for filtering noisy, low SNR sinusoids
+This program is an HTTP web application written in Go that uses the html/template package to generate dynamic HTML.  Issue "go build predict.go" or issue "go run predict.go" to start the server. In a web browser enter http://127.0.0.1:8080/lmspredictale in the address bar. This program will generate an adaptive FIR filter using the LMS algorithm.  It is used to filter a noisy signal with a low signal-to-noise ratio (SNR).  The signal is a sine wave in white noise with a supplied SNR.  Various parameters are specified.  The user can display the impulse and frequency response of the adaptive filter. The user can choose to display the filtered noisy sequence as well as the unfiltered sequence.
