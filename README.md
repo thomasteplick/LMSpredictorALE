@@ -23,4 +23,20 @@ This program is an HTTP web application written in Go that uses the html/templat
 
 ![lmsPredictorALE_3](https://github.com/thomasteplick/LMSpredictorALE/assets/117768679/de5e0d70-7712-4e4a-8a87-f6aae54e14b5)
 
+<h3>Sinusoid in White Noise with 0dB SNR</h3>
+
+![image](https://github.com/thomasteplick/LMSpredictorALE/assets/117768679/0f900b39-1f9a-4b8a-802b-4908384c84a2)
+
+<h3>Filtered Sinsusoid in White Noise with 0dB SNR</h3>
+
+![image](https://github.com/thomasteplick/LMSpredictorALE/assets/117768679/94dc8188-0c82-4804-82c0-414a3a0e203b)
+
+<h3>Sinusoid in White Noise with -10dB SNR</h3>
+
+![image](https://github.com/thomasteplick/LMSpredictorALE/assets/117768679/e474d9ba-f5e7-40ee-a67e-9c3ab818068d)
+
+<h3>Filtered Sinusoid in White Noise with -10dB SNR</h3>
+
+![image](https://github.com/thomasteplick/LMSpredictorALE/assets/117768679/e3e12d41-8a14-41f8-943f-bec82ba6f668)
+
 
